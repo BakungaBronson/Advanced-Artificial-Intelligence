@@ -1,6 +1,6 @@
 import json
 
-def k_fold(file_path:str="", k:int=10):
+def k_fold(file_path:str="", k:int=10, mix:bool=False, data_per_category:int=0, categories:int=0, entries_per_category_fold:int=0, clean=True):
     # Check for future divide by 0 and negative numbers
     if k < 1:
         raise Exception("The number of folds can not be 0 or negative")
@@ -28,6 +28,26 @@ def k_fold(file_path:str="", k:int=10):
             print("Length of data: ", total_data)
             print("Data per fold: ", data_per_fold, "\n\n")
             
+            # Mixing the data
+            if mix == True:
+                if categories < 2:
+                    raise Exception("The number of categories must be greater than 1")
+                elif total_data < data_per_category or data_per_category < 1:
+                    raise Exception("The data per category must be less than the total data and greater than 0")
+                elif data_per_category % entries_per_category_fold > 0:
+                    raise Exception("The entries per category per fold should be a multiple of the data per category")
+                
+                # We know that we have 50 of each data and we want to have each 5 of each data in each fold
+                
+                new_lines = []
+                for count in range(0, data_per_category, entries_per_category_fold):
+                    for category in range(categories):
+                        new_lines.append(lines[count + (data_per_category * category)])
+                        new_lines.append(lines[count + 1 + (data_per_category * category)])
+                        new_lines.append(lines[count + 2 + (data_per_category * category)])
+                        new_lines.append(lines[count + 3 + (data_per_category * category)])
+                        new_lines.append(lines[count + 4 + (data_per_category * category)])
+                           
             # Part 1: Getting the folds
             fold_counter = 0     
             for index in range(total_data):
@@ -37,8 +57,9 @@ def k_fold(file_path:str="", k:int=10):
                     # Do not increment the counter for the 0 index
                     if index != 0:
                         fold_counter += 1
-
-                fold.append(lines[index])
+                
+                # Remove trailing new line characters if clean is true
+                fold.append(new_lines[index]) if clean == False else fold.append(new_lines[index].strip())
                 folds[fold_counter] = fold
                 
             # Pretty print the JSON output
@@ -46,7 +67,6 @@ def k_fold(file_path:str="", k:int=10):
             print(len(folds))
             
             # Part 2: Showing training data and validation data
-
             for index in range(k):   
                 # Reset variables
                 final_data.append([])
@@ -75,5 +95,6 @@ def k_fold(file_path:str="", k:int=10):
                 
     except Exception as e:
         print("Something went wrong: ", e)
-        
-k_fold("/Users/bakunga/Downloads/iris/iris.data")
+
+# Running the function        
+k_fold("/Users/bakunga/Downloads/iris/iris.data", 10, True, 50, 3, 5, False)
