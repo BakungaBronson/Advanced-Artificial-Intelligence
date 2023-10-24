@@ -1,6 +1,6 @@
 import json
 
-def k_fold(file_path:str="", k:int=10, mix:bool=False, data_per_category:int=0, categories:int=0, entries_per_category_fold:int=0, clean=True):
+def k_fold(file_path:str="", output_folder_path="", k:int=10, mix:bool=False, data_per_category:int=0, categories:int=0, entries_per_category_fold:int=0, clean=True):
     # Check for future divide by 0 and negative numbers
     if k < 1:
         raise Exception("The number of folds can not be 0 or negative")
@@ -28,7 +28,7 @@ def k_fold(file_path:str="", k:int=10, mix:bool=False, data_per_category:int=0, 
             print("Length of data: ", total_data)
             print("Data per fold: ", data_per_fold, "\n\n")
             
-            # Mixing the data
+            # Part 1: Mixing the data
             if mix == True:
                 if categories < 2:
                     raise Exception("The number of categories must be greater than 1")
@@ -48,7 +48,7 @@ def k_fold(file_path:str="", k:int=10, mix:bool=False, data_per_category:int=0, 
                         new_lines.append(lines[count + 3 + (data_per_category * category)])
                         new_lines.append(lines[count + 4 + (data_per_category * category)])
                            
-            # Part 1: Getting the folds
+            # Part 2: Getting the folds
             fold_counter = 0     
             for index in range(total_data):
                 if index % (data_per_fold) == 0:
@@ -64,9 +64,9 @@ def k_fold(file_path:str="", k:int=10, mix:bool=False, data_per_category:int=0, 
                 
             # Pretty print the JSON output
             print(json.dumps(folds, indent=4))
-            print(len(folds))
+            # print(len(folds))
             
-            # Part 2: Showing training data and validation data
+            # Part 3: Showing training data and validation data
             for index in range(k):   
                 # Reset variables
                 final_data.append([])
@@ -86,10 +86,11 @@ def k_fold(file_path:str="", k:int=10, mix:bool=False, data_per_category:int=0, 
                 data_set["validation_data"] = folds[stop % k]
                 
                 final_data[index] = data_set
-                
-            # Write the output to a file
-            with open("/Users/bakunga/Downloads/iris/output.txt", "w") as output:
-                output.write(json.dumps(final_data, indent=4))
+            
+            for index in range(len(final_data)):    
+                # Write the output to a file
+                with open(f"{output_folder_path}/output{index + 1}.txt", "w") as output:
+                    output.write(json.dumps(final_data[index], indent=4))
                 
             print("\n\n## Output has been written to output.txt ##")
                 
@@ -97,4 +98,4 @@ def k_fold(file_path:str="", k:int=10, mix:bool=False, data_per_category:int=0, 
         print("Something went wrong: ", e)
 
 # Running the function        
-k_fold("/Users/bakunga/Downloads/iris/iris.data", 10, True, 50, 3, 5, False)
+k_fold("/Users/bakunga/Downloads/iris/iris.data", "/Users/bakunga/Documents/Projects/Advanced Artificial Intelligence/output", 10, True, 50, 3, 5, False)
